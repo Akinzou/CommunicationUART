@@ -13,7 +13,7 @@ DallasTemperature sensors(&oneWire);
 LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);
 IRrecv irrecv(RECV_PIN);
 decode_results results;
-int mode = 0x800FF422;
+int mode = 3772833823;
 int pin_Startowy = 10;
 File myFile;
 
@@ -25,6 +25,14 @@ void setup(void) {
   sensors.begin();
   lcd.setCursor(0, 1);
   irrecv.enableIRIn();
+  if (!SD.begin(PB4)) 
+  {
+  Serial.println("initialization failed!");
+  }
+  else
+  {
+    myFile = SD.open("temp.txt", FILE_WRITE);
+  }
 
   
   for(int i = pin_Startowy; i<(pin_Startowy*2); i++)
@@ -51,17 +59,21 @@ void loop(void) {
   
   sensors.requestTemperatures();
   float temperatura = sensors.getTempCByIndex(0);
+  myFile = SD.open("temp.txt", FILE_WRITE);
+  myFile.print(temperatura);
+  myFile.println("*C");
+  myFile.close();
   lcd.setCursor(0, 1);
   switch(mode)
   {
-    case 0x800FF422:
+    case 3772833823:
       lcd.print(temperatura); 
       Serial.println("Cel");
       lcd.setCursor(5, 1);
       lcd.print("*C");
       break;
 
-    case 0x800F7422:
+    case 3772829743:
       lcd.print(temperatura * 1.8 + 32); 
       lcd.setCursor(5, 1);
       Serial.println("Fahren");
@@ -82,12 +94,12 @@ void loop(void) {
       switch(mode)
       {
         
-        case 0x800FF422:
-          mode = 0x800F7422;
+        case 3772829743:
+          mode = 3772833823;
           break;
     
-        case 0x800F7422:
-          mode = 0x800FF422;
+        case 3772833823:
+          mode = 3772829743;
           break;
           
       }
